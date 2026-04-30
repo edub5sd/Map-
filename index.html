@@ -23,19 +23,61 @@
 <body>
 <button id="modeBtn" onclick="toggleMode()">SWITCH TO FLIGHT MODE</button>
 
-    <div id="map"></div>
+        <div id="map"></div>
     <div id="dash">
-        <div class="box"><span class="lab">Speed</span><span id="spd" class="val">0</span> km/h</div>
-        <div class="box"><span class="lab">Elevation</span><span id="alt" class="val">--</span> m</div>
-        <div class="box"><span class="lab">Compass</span><span id="hdg" class="val">0</span>°</div>
-        <div class="box"><span class="lab">Status</span><span id="st" class="val" style="font-size:0.7rem">Waiting...</span></div>
+        <div class="box"><span class="lab">SPEED</span><span id="spd" class="val">0</span></div>
+        <div class="box"><span class="lab">ELEVATION</span><span id="alt" class="val">--</span></div>
+        <div class="box"><span class="lab">COMPASS</span><span id="hdg" class="val">0</span>°</div>
+        <div class="box"><span class="lab">SYSTEMS</span><span id="st" class="val" style="font-size:0.7rem">WAITING</span></div>
     </div>
-    /ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-var marker = L.marker([0,0]).addTo(map);
+    <script>
+    var map = L.map('map').setView([0,0], 2);
+    var mode = "ground"; // Starting mode
 
-navigator.geolocation.watchPosition(function(p) {
+    // Setup both map styles
+    var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+    var marker = L.marker([0,0]).addTo(map);
+
+    // This function runs when you tap the button
+    function toggleMode() {
+        var btn = document.getElementById('modeBtn');
+        if (mode === "ground") {
+            mode = "flight";
+            btn.innerText = "SWITCH TO GROUND MODE";
+            map.removeLayer(streetLayer);
+            satLayer.addTo(map);
+        } else {
+            mode = "ground";
+            btn.innerText = "SWITCH TO FLIGHT MODE";
+            map.removeLayer(satLayer);
+            streetLayer.addTo(map);
+        }
+    }
+
+    navigator.geolocation.watchPosition(function(p) {
+        var c = p.coords;
+        marker.setLatLng([c.latitude, c.longitude]);
+        
+        // Zoom 16 for ground, 14 for flight
+        map.setView([c.latitude, c.longitude], (mode === "ground" ? 16 : 14));
+
+        if (mode === "ground") {
+            // Ground Math: km/h and meters
+            document.getElementById('spd').innerHTML = (c.speed ? (c.speed * 3.6).toFixed(1) : "0") + " <small>km/h</small>";
+            document.getElementById('alt').innerHTML = (c.altitude ? c.altitude.toFixed(0) : "--") + " <small>m</small>";
+        } else {
+            // Flight Math: Knots and Feet
+            document.getElementById('spd').innerHTML = (c.speed ? (c.speed * 1.94384).toFixed(1) : "0") + " <small>KTS</small>";
+            document.getElementById('alt').innerHTML = (c.altitude ? (c.altitude * 3.28084).toFixed(0) : "--") + " <small>FT</small>";
+        }
+        
+        document.getElementById('hdg').innerText = c.heading ? c.heading.toFixed(0) : "0";
+        document.getElementById('st').innerText = mode.toUpperCase() + " ACTIVE";
+    }, null, { enableHighAccuracy: true });
+</script>
+
     var c = p.coords;
     marker.setLatLng([c.latitude, c.longitude]);
     map.setView([c.latitude, c.longitude], 14);
