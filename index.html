@@ -16,7 +16,7 @@
 }
 .box { text-align: center; }
 .lab { font-size: 0.7rem; color: #008800; display: block; font-weight: bold; }
-.val { font-size: 1.4rem; font-weight: bold; text-shadow: 0 0 5px #00ff00; }
+.val { font-size: 1.4rem; font-weight: bold; text-shadow: 0 0 5px #00ff00;
 
     </style>
 </head>
@@ -31,19 +31,28 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var map = L.map('map').setView([0,0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        var marker = L.marker([0,0]).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+var marker = L.marker([0,0]).addTo(map);
 
-        navigator.geolocation.watchPosition(function(p) {
-            var c = p.coords;
-            marker.setLatLng([c.latitude, c.longitude]);
-            map.setView([c.latitude, c.longitude], 16);
-            document.getElementById('spd').innerText = c.speed ? (c.speed * 3.6).toFixed(1) : "0";
-            document.getElementById('alt').innerText = c.altitude ? c.altitude.toFixed(0) : "--";
-            document.getElementById('hdg').innerText = c.heading ? c.heading.toFixed(0) : "0";
-            document.getElementById('st').innerText = "LIVE GPS";
-        }, function(e) { document.getElementById('st').innerText = "Err: " + e.message; }, 
-        { enableHighAccuracy: true });
+navigator.geolocation.watchPosition(function(p) {
+    var c = p.coords;
+    marker.setLatLng([c.latitude, c.longitude]);
+    map.setView([c.latitude, c.longitude], 14);
+
+    // Speed in Knots
+    var knots = c.speed ? (c.speed * 1.94384).toFixed(1) : "0";
+    document.getElementById('spd').innerHTML = knots;
+
+    // Altitude in Feet
+    var feet = c.altitude ? (c.altitude * 3.28084).toFixed(0) : "--";
+    document.getElementById('alt').innerHTML = feet;
+
+    document.getElementById('hdg').innerText = c.heading ? c.heading.toFixed(0) : "0";
+    document.getElementById('st').innerText = "SYSTEMS NOMINAL";
+}, function(e) { 
+    document.getElementById('st').innerText = "SIGNAL LOST"; 
+}, { enableHighAccuracy: true });
+
     </script>
 </body>
 </html>
