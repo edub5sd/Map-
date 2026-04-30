@@ -1,86 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My GPS Map</title>
+    <title>Aviation GPS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-  body { margin: 0; padding: 0; background: #000; font-family: 'Courier New', monospace; }
-#map { height: 100vh; width: 100vw; }
-#dash {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-    z-index: 1000; background: rgba(0, 20, 0, 0.95); color: #00ff00;
-    padding: 15px; border-radius: 10px; width: 85%; display: grid;
-    grid-template-columns: 1fr 1fr; gap: 15px; border: 2px solid #00ff00;
-    box-shadow: 0 0 15px #00ff00;
-}
-.box { text-align: center; }
-.lab { font-size: 0.7rem; color: #008800; display: block; font-weight: bold; }
-.val { font-size: 1.4rem; font-weight: bold; text-shadow: 0 0 5px #00ff00;
-
+        body { margin: 0; padding: 0; background: #000; font-family: 'Courier New', monospace; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; background: #000; }
+        #dash {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; background: rgba(0, 20, 0, 0.9); color: #00ff00;
+            padding: 15px; border-radius: 10px; width: 85%; display: grid;
+            grid-template-columns: 1fr 1fr; gap: 15px; border: 2px solid #00ff00;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        #modeBtn {
+            position: absolute; top: 15px; right: 15px; z-index: 1001;
+            background: #00ff00; color: #000; border: none; padding: 10px;
+            font-family: monospace; font-weight: bold; border-radius: 5px;
+            box-shadow: 0 0 10px #00ff00; cursor: pointer;
+        }
+        .box { text-align: center; }
+        .lab { font-size: 0.7rem; color: #008800; display: block; font-weight: bold; text-transform: uppercase; }
+        .val { font-size: 1.4rem; font-weight: bold; text-shadow: 0 0 5px #00ff00; }
     </style>
 </head>
 <body>
-<button id="modeBtn" onclick="toggleMode()">SWITCH TO FLIGHT MODE</button>
 
-        <div id="map"></div>
+    <button id="modeBtn" onclick="toggleMode()">SWITCH TO FLIGHT MODE</button>
+    
+    <div id="map"></div>
+
     <div id="dash">
-        <div class="box"><span class="lab">SPEED</span><span id="spd" class="val">0</span></div>
-        <div class="box"><span class="lab">ELEVATION</span><span id="alt" class="val">--</span></div>
-        <div class="box"><span class="lab">COMPASS</span><span id="hdg" class="val">0</span>°</div>
-        <div class="box"><span class="lab">SYSTEMS</span><span id="st" class="val" style="font-size:0.7rem">WAITING</span></div>
+        <div class="box"><span class="lab">Speed</span><span id="spd" class="val">0</span></div>
+        <div class="box"><span class="lab">Elevation</span><span id="alt" class="val">--</span></div>
+        <div class="box"><span class="lab">Compass</span><span id="hdg" class="val">0</span>°</div>
+        <div class="box"><span class="lab">Status</span><span id="st" class="val" style="font-size:0.7rem">WAITING</span></div>
     </div>
 
-    <script>
-    var map = L.map('map').setView([0,0], 2);
-    var mode = "ground"; // Starting mode
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    var map = L.map('map').setView([0,0], 2);
-    var mode = "ground"; 
+    <script>
+        var map = L.map('map').setView([0,0], 2);
+        var mode = "ground"; 
 
-    // Create the two map styles
-    var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-    var marker = L.marker([0,0]).addTo(map);
+        var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+        var marker = L.marker([0,0]).addTo(map);
 
-    // This is the missing piece that makes the button work!
-    function toggleMode() {
-        var btn = document.getElementById('modeBtn');
-        if (mode === "ground") {
-            mode = "flight";
-            btn.innerText = "SWITCH TO GROUND MODE";
-            map.removeLayer(streetLayer);
-            satLayer.addTo(map);
-        } else {
-            mode = "ground";
-            btn.innerText = "SWITCH TO FLIGHT MODE";
-            map.removeLayer(satLayer);
-            streetLayer.addTo(map);
+        function toggleMode() {
+            var btn = document.getElementById('modeBtn');
+            if (mode === "ground") {
+                mode = "flight";
+                btn.innerText = "SWITCH TO GROUND MODE";
+                map.removeLayer(streetLayer);
+                satLayer.addTo(map);
+            } else {
+                mode = "ground";
+                btn.innerText = "SWITCH TO FLIGHT MODE";
+                map.removeLayer(satLayer);
+                streetLayer.addTo(map);
+            }
         }
-    }
 
-    navigator.geolocation.watchPosition(function(p) {
-        var c = p.coords;
-        marker.setLatLng([c.latitude, c.longitude]);
-        map.setView([c.latitude, c.longitude], (mode === "ground" ? 16 : 14));
+        navigator.geolocation.watchPosition(function(p) {
+            var c = p.coords;
+            marker.setLatLng([c.latitude, c.longitude]);
+            map.setView([c.latitude, c.longitude], (mode === "ground" ? 16 : 14));
 
-        if (mode === "ground") {
-            document.getElementById('spd').innerHTML = (c.speed ? (c.speed * 3.6).toFixed(1) : "0") + " <small>km/h</small>";
-            document.getElementById('alt').innerHTML = (c.altitude ? c.altitude.toFixed(0) : "--") + " <small>m</small>";
-        } else {
-            document.getElementById('spd').innerHTML = (c.speed ? (c.speed * 1.94384).toFixed(1) : "0") + " <small>KTS</small>";
-            document.getElementById('alt').innerHTML = (c.altitude ? (c.altitude * 3.28084).toFixed(0) : "--") + " <small>FT</small>";
-        }
-        
-        document.getElementById('hdg').innerText = c.heading ? c.heading.toFixed(0) : "0";
-        document.getElementById('st').innerText = mode.toUpperCase() + " ACTIVE";
-    }, function(e) { 
-        document.getElementById('st').innerText = "SIGNAL LOST"; 
-    }, { enableHighAccuracy: true });
-</script>
-
+            if (mode === "ground") {
+                document.getElementById('spd').innerHTML = (c.speed ? (c.speed * 3.6).toFixed(1) : "0") + " <small>km/h</small>";
+                document.getElementById('alt').innerHTML = (c.altitude ? c.altitude.toFixed(0) : "--") + " <small>m</small>";
+            } else {
+                document.getElementById('spd').innerHTML = (c.speed ? (c.speed * 1.94384).toFixed(1) : "0") + " <small>KTS</small>";
+                document.getElementById('alt').innerHTML = (c.altitude ? (c.altitude * 3.28084).toFixed(0) : "--") + " <small>FT</small>";
+            }
+            
+            document.getElementById('hdg').innerText = c.heading ? c.heading.toFixed(0) : "0";
+            document.getElementById('st').innerText = mode.toUpperCase() + " ACTIVE";
+        }, function(e) {
+            document.getElementById('st').innerText = "GPS ERROR";
+        }, { enableHighAccuracy: true });
     </script>
 </body>
 </html>
