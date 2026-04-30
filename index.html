@@ -28,9 +28,8 @@
         <div class="box"><span class="lab">Compass</span><span id="hdg" class="val">0</span>°</div>
         <div class="box"><span class="lab">Status</span><span id="st" class="val" style="font-size:0.7rem">Waiting...</span></div>
     </div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([0,0], 2);
+    /ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 var marker = L.marker([0,0]).addTo(map);
 
